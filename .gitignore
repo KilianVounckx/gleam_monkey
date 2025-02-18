@@ -1,0 +1,10 @@
+*
+!*/
+!.gitignore
+
+!/gleam.toml
+!/manifest.toml
+!/Justfile
+!/src/**/*.gleam
+!/test/**/*.gleam
+!/cram/**/*.t
