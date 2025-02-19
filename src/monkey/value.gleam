@@ -1,10 +1,11 @@
 import gleam/int
+import gleam/io
 import gleam/list
 import gleam/string
 import monkey/ast.{type Expression}
 
 pub type Error {
-  StringLengthTypeMismatch(got: Value)
+  BuiltinTypeMismatch(name: String, got: List(Value))
   InfixTypeMismatch(left: Value, operator: ast.InfixOperator, right: Value)
   PrefixTypeMismatch(operator: ast.PrefixOperator, right: Value)
   VariableNotFound(name: String)
@@ -28,9 +29,13 @@ pub type Environment {
 }
 
 pub const initial_environment = Extend(
-  Empty,
-  "string_length",
-  Builtin(name: "string_length", function: string_length),
+  Extend(
+    Empty,
+    "string_length",
+    Builtin(name: "string_length", function: string_length),
+  ),
+  "print",
+  Builtin(name: "print", function: print_value),
 )
 
 pub fn environment_lookup(
@@ -84,8 +89,9 @@ pub fn is_truthy(value: Value) -> Bool {
 
 pub fn error_to_string(error: Error) -> String {
   case error {
-    StringLengthTypeMismatch(got:) -> {
-      "type mismatch: string_length(" <> to_string(got) <> ")"
+    BuiltinTypeMismatch(name:, got:) -> {
+      let got = got |> list.map(to_string) |> string.join(", ")
+      "type mismatch: " <> name <> "(" <> got <> ")"
     }
     InfixTypeMismatch(left:, operator:, right:) -> {
       "type mismatch: "
@@ -113,10 +119,21 @@ pub fn error_to_string(error: Error) -> String {
   }
 }
 
+fn print_value(values: List(Value)) -> Result(Value, Error) {
+  case values {
+    [String(s)] -> {
+      io.println(s)
+      Ok(Nil)
+    }
+    [value] -> Error(BuiltinTypeMismatch(name: "print", got: [value]))
+    _ -> Error(ArityMismatch(got: list.length(values), want: 1))
+  }
+}
+
 fn string_length(values: List(Value)) -> Result(Value, Error) {
   case values {
     [String(s)] -> Ok(Integer(string.length(s)))
-    [value] -> Error(StringLengthTypeMismatch(got: value))
+    [value] -> Error(BuiltinTypeMismatch(name: "string_length", got: [value]))
     _ -> Error(ArityMismatch(got: list.length(values), want: 1))
   }
 }
