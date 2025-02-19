@@ -2,6 +2,7 @@
 !*/
 !.gitignore
 
+!/LICENSE
 !/gleam.toml
 !/manifest.toml
 !/src/**/*.gleam
