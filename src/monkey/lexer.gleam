@@ -55,6 +55,11 @@ fn do_lex(
     [">", ..rest] -> [Ok(token.Greater), ..acc] |> do_lex(rest)
     ["<", "=", ..rest] -> [Ok(token.LessEqual), ..acc] |> do_lex(rest)
     ["<", ..rest] -> [Ok(token.Less), ..acc] |> do_lex(rest)
+    ["\"", ..rest] -> {
+      let #(before, rest) = rest |> list.split_while(fn(c) { c != "\"" })
+      let string = before |> string.join("")
+      [Ok(token.String(string)), ..acc] |> do_lex(rest |> list.drop(1))
+    }
     [c, ..rest] ->
       case is_digit(c) {
         True -> {

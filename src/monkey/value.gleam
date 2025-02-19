@@ -4,6 +4,7 @@ import monkey/ast.{type Expression}
 
 pub type Value {
   Function(parameters: List(String), body: Expression, environment: Environment)
+  String(String)
   Integer(Int)
   Boolean(Bool)
   Nil
@@ -51,6 +52,7 @@ pub fn environment_lookup(
 pub fn to_string(value: Value) -> String {
   case value {
     Function(_, _, _) -> "<function>"
+    String(s) -> "\"" <> s <> "\""
     Integer(n) -> int.to_string(n)
     Boolean(True) -> "true"
     Boolean(False) -> "false"

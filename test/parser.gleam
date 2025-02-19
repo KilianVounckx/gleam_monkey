@@ -173,6 +173,7 @@ pub fn parse_test() {
       right: ast.Variable("y"),
     ),
   ))
+  pipeline("\"hi there\"") |> should.equal(ast.String("hi there"))
   pipeline("42") |> should.equal(ast.Integer(42))
   pipeline("true") |> should.equal(ast.Boolean(True))
   pipeline("false") |> should.equal(ast.Boolean(False))

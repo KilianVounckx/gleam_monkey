@@ -4,6 +4,7 @@ pub type Token {
   Eof
 
   Identifier(String)
+  String(String)
   Integer(Int)
 
   LeftParen
@@ -41,6 +42,7 @@ pub fn to_string(token: Token) -> String {
     Eof -> "<EOF>"
 
     Identifier(name) -> name
+    String(s) -> "\"" <> s <> "\""
     Integer(n) -> int.to_string(n)
 
     LeftParen -> "("

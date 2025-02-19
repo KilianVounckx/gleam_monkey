@@ -99,6 +99,7 @@ fn prefix(token: Token) -> ResultAction(Expression, Error, Parser) {
     token.Bang | token.Minus -> parse_prefix()
     token.Identifier(_) -> parse_identifier()
     token.Fun -> parse_function()
+    token.String(_) -> parse_string()
     token.Integer(_) -> parse_integer()
     token.True | token.False -> parse_boolean()
     token.Nil -> parse_nil()
@@ -283,6 +284,14 @@ fn do_parse_function_parameters(
       do_parse_function_parameters(parameters)
     }
     _ -> act.ok(parameters)
+  }
+}
+
+fn parse_string() -> ResultAction(Expression, Error, Parser) {
+  use current <- act.try(current_token())
+  case current {
+    token.String(s) -> act.ok(ast.String(s))
+    _ -> panic as "unreachable in string"
   }
 }
 

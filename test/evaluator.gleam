@@ -97,6 +97,7 @@ odd(10)",
   pipeline("!nil") |> should.equal(value.Boolean(True))
   pipeline("!0") |> should.equal(value.Boolean(False))
   pipeline("!5") |> should.equal(value.Boolean(False))
+  pipeline("\"hi\"") |> should.equal(value.String("hi"))
   pipeline("42") |> should.equal(value.Integer(42))
   pipeline("true") |> should.equal(value.Boolean(True))
   pipeline("false") |> should.equal(value.Boolean(False))
