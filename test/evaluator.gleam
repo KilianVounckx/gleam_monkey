@@ -6,9 +6,12 @@ import monkey/ast
 import monkey/evaluator
 import monkey/lexer
 import monkey/parser
-import monkey/value.{type Value, Empty}
+import monkey/value.{type Value, initial_environment}
 
 pub fn eval_test() {
+  pipeline("string_length(\"\")") |> should.equal(value.Integer(0))
+  pipeline("string_length(\"hello\")") |> should.equal(value.Integer(5))
+  pipeline("string_length(\"hi there\")") |> should.equal(value.Integer(8))
   pipeline(
     "let rec even = fun(n) if n == 0 then true else odd(n - 1)
 and odd = fun(n) if n == 0 then false else even(n - 1) in
@@ -48,7 +51,7 @@ odd(10)",
       operator: ast.Add,
       right: ast.Variable("y"),
     ),
-    environment: Empty,
+    environment: initial_environment,
   ))
   pipeline("let a = 5 in a") |> should.equal(value.Integer(5))
   pipeline("let a = 5 * 5 in a") |> should.equal(value.Integer(25))
@@ -103,15 +106,15 @@ odd(10)",
 
 pub fn eval_error_test() {
   pipeline_error("foobar")
-  |> should.equal(evaluator.VariableNotFound(name: "foobar"))
+  |> should.equal(value.VariableNotFound(name: "foobar"))
   pipeline_error("5 + true")
-  |> should.equal(evaluator.InfixTypeMismatch(
+  |> should.equal(value.InfixTypeMismatch(
     left: value.Integer(5),
     operator: ast.Add,
     right: value.Boolean(True),
   ))
   pipeline_error("-true")
-  |> should.equal(evaluator.PrefixTypeMismatch(
+  |> should.equal(value.PrefixTypeMismatch(
     operator: ast.Negate,
     right: value.Boolean(True),
   ))
@@ -127,7 +130,7 @@ fn pipeline_error(input: String) -> evaluator.Error {
   |> parser.parse
   |> result.map_error(parser.error_to_string)
   |> should.be_ok
-  |> evaluator.eval(Empty)
+  |> evaluator.eval(initial_environment)
   |> result.map(value.to_string)
   |> should.be_error
 }
@@ -142,7 +145,7 @@ fn pipeline(input: String) -> Value {
   |> parser.parse
   |> result.map_error(parser.error_to_string)
   |> should.be_ok
-  |> evaluator.eval(Empty)
-  |> result.map_error(evaluator.error_to_string)
+  |> evaluator.eval(initial_environment)
+  |> result.map_error(value.error_to_string)
   |> should.be_ok
 }

@@ -1,5 +1,4 @@
 import gleam/bool
-import gleam/int
 import gleam/list
 import gleam/result
 import monkey/ast.{type Expression}
@@ -7,43 +6,8 @@ import monkey/value.{
   type Environment, type Value, Extend, ExtendRec, environment_lookup,
 }
 
-pub type Error {
-  InfixTypeMismatch(left: Value, operator: ast.InfixOperator, right: Value)
-  PrefixTypeMismatch(operator: ast.PrefixOperator, right: Value)
-  VariableNotFound(name: String)
-  NotAFunction(value: Value)
-  ArityMismatch(got: Int, want: Int)
-}
-
-pub fn error_to_string(error: Error) -> String {
-  case error {
-    InfixTypeMismatch(left:, operator:, right:) -> {
-      "type mismatch: "
-      <> value.to_string(left)
-      <> " "
-      <> ast.infix_to_string(operator)
-      <> " "
-      <> value.to_string(right)
-    }
-    PrefixTypeMismatch(operator:, right:) -> {
-      "type mismatch: "
-      <> ast.prefix_to_string(operator)
-      <> value.to_string(right)
-    }
-    VariableNotFound(name:) -> {
-      "variable not found: " <> name
-    }
-    NotAFunction(value:) -> {
-      "not a function: " <> value.to_string(value)
-    }
-    ArityMismatch(got:, want:) -> {
-      "arity mismatch: expected "
-      <> int.to_string(want)
-      <> ", got "
-      <> int.to_string(got)
-    }
-  }
-}
+pub type Error =
+  value.Error
 
 pub fn eval(
   expression: Expression,
@@ -83,10 +47,16 @@ pub fn eval(
               body |> eval(environment)
             }
             False ->
-              Error(ArityMismatch(got: num_arguments, want: num_parameters))
+              Error(value.ArityMismatch(
+                got: num_arguments,
+                want: num_parameters,
+              ))
           }
         }
-        _ -> Error(NotAFunction(value: function))
+        value.Builtin(name: _, function:) -> {
+          function(arguments)
+        }
+        _ -> Error(value.NotAFunction(value: function))
       }
     }
     ast.Infix(left:, operator:, right:) -> {
@@ -113,7 +83,7 @@ pub fn eval(
           Ok(value.Integer(left / right))
         value.String(left), ast.Concat, value.String(right) ->
           Ok(value.String(left <> right))
-        _, _, _ -> Error(InfixTypeMismatch(left:, operator:, right:))
+        _, _, _ -> Error(value.InfixTypeMismatch(left:, operator:, right:))
       }
     }
     ast.Prefix(operator:, right:) -> {
@@ -124,7 +94,7 @@ pub fn eval(
         ast.Negate -> {
           case right {
             value.Integer(n) -> Ok(value.Integer(-n))
-            _ -> Error(PrefixTypeMismatch(operator:, right:))
+            _ -> Error(value.PrefixTypeMismatch(operator:, right:))
           }
         }
       }
@@ -132,7 +102,6 @@ pub fn eval(
     ast.Variable(name) -> {
       environment
       |> environment_lookup(name)
-      |> result.map_error(fn(_) { VariableNotFound(name) })
     }
     ast.Function(parameters:, body:) ->
       Ok(value.Function(parameters:, body:, environment:))
