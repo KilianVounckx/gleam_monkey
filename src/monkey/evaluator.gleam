@@ -105,6 +105,10 @@ pub fn eval(
     }
     ast.Function(parameters:, body:) ->
       Ok(value.Function(parameters:, body:, environment:))
+    ast.List(values:) -> {
+      use values <- result.try(values |> eval_expressions(environment))
+      Ok(value.List(values))
+    }
     ast.String(s) -> Ok(value.String(s))
     ast.Integer(n) -> Ok(value.Integer(n))
     ast.Boolean(b) -> Ok(value.Boolean(b))

@@ -100,6 +100,7 @@ fn prefix(token: Token) -> ResultAction(Expression, Error, Parser) {
     token.Bang | token.Minus -> parse_prefix()
     token.Identifier(_) -> parse_identifier()
     token.Fun -> parse_function()
+    token.LeftBracket -> parse_list()
     token.String(_) -> parse_string()
     token.Integer(_) -> parse_integer()
     token.True | token.False -> parse_boolean()
@@ -177,35 +178,7 @@ fn parse_call(function: Expression) -> ResultAction(Expression, Error, Parser) {
 }
 
 fn parse_call_arguments() -> ResultAction(List(Expression), Error, Parser) {
-  use peek <- act.try(peek_token())
-  case peek {
-    token.RightParen -> {
-      use _ <- act.try(advance())
-      act.ok([])
-    }
-    _ -> {
-      use arguments <- act.try(do_parse_call_arguments([]))
-      let arguments = arguments |> list.reverse
-      use _ <- act.try(expect_peek_token(token.RightParen))
-      act.ok(arguments)
-    }
-  }
-}
-
-fn do_parse_call_arguments(
-  arguments: List(Expression),
-) -> ResultAction(List(Expression), Error, Parser) {
-  use _ <- act.try(advance())
-  use argument <- act.try(parse_expression(precedence_lowest))
-  let arguments = [argument, ..arguments]
-  use peek <- act.try(peek_token())
-  case peek {
-    token.Comma -> {
-      use _ <- act.try(advance())
-      do_parse_call_arguments(arguments)
-    }
-    _ -> act.ok(arguments)
-  }
+  parse_expressions(token.RightParen)
 }
 
 fn parse_infix(left: Expression) -> ResultAction(Expression, Error, Parser) {
@@ -297,6 +270,11 @@ fn parse_string() -> ResultAction(Expression, Error, Parser) {
   }
 }
 
+fn parse_list() -> ResultAction(Expression, Error, Parser) {
+  use expressions <- act.try(parse_expressions(token.RightBracket))
+  act.ok(ast.List(expressions))
+}
+
 fn parse_integer() -> ResultAction(Expression, Error, Parser) {
   use current <- act.try(current_token())
   case current {
@@ -323,6 +301,40 @@ fn parse_group() -> ResultAction(Expression, Error, Parser) {
   use expression <- act.try(parse_expression(precedence_lowest))
   use _ <- act.try(expect_peek_token(token.RightParen))
   act.ok(expression)
+}
+
+fn parse_expressions(
+  end_token: Token,
+) -> ResultAction(List(Expression), Error, Parser) {
+  use peek <- act.try(peek_token())
+  case peek == end_token {
+    True -> {
+      use _ <- act.try(advance())
+      act.ok([])
+    }
+    False -> {
+      use arguments <- act.try(do_parse_expressions([]))
+      let arguments = arguments |> list.reverse
+      use _ <- act.try(expect_peek_token(end_token))
+      act.ok(arguments)
+    }
+  }
+}
+
+fn do_parse_expressions(
+  arguments: List(Expression),
+) -> ResultAction(List(Expression), Error, Parser) {
+  use _ <- act.try(advance())
+  use argument <- act.try(parse_expression(precedence_lowest))
+  let arguments = [argument, ..arguments]
+  use peek <- act.try(peek_token())
+  case peek {
+    token.Comma -> {
+      use _ <- act.try(advance())
+      do_parse_expressions(arguments)
+    }
+    _ -> act.ok(arguments)
+  }
 }
 
 fn advance() -> ResultAction(Nil, Error, Parser) {

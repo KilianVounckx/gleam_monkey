@@ -16,6 +16,7 @@ pub type Error {
 pub type Value {
   Function(parameters: List(String), body: Expression, environment: Environment)
   Builtin(name: String, function: fn(List(Value)) -> Result(Value, Error))
+  List(List(Value))
   String(String)
   Integer(Int)
   Boolean(Bool)
@@ -71,6 +72,8 @@ pub fn to_string(value: Value) -> String {
   case value {
     Function(_, _, _) -> "<function>"
     Builtin(name:, function: _) -> "<builtin function '" <> name <> "'>"
+    List(values) ->
+      "[" <> { values |> list.map(to_string) |> string.join(", ") } <> "]"
     String(s) -> "\"" <> s <> "\""
     Integer(n) -> int.to_string(n)
     Boolean(True) -> "true"

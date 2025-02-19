@@ -16,6 +16,7 @@ if (5 < 10) then true else false
 10 != 9
 ! != = == > >= < <= <>
 \"hi there\"
+[]
 "
   |> lexer.lex
   |> should.be_ok
@@ -93,6 +94,8 @@ if (5 < 10) then true else false
     token.LessEqual,
     token.LessGreater,
     token.String("hi there"),
+    token.LeftBracket,
+    token.RightBracket,
     token.Eof,
   ])
 }

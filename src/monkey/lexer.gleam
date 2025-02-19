@@ -40,6 +40,8 @@ fn do_lex(
     ["\t", ..rest] -> acc |> do_lex(rest)
     ["\r", ..rest] -> acc |> do_lex(rest)
     ["\n", ..rest] -> acc |> do_lex(rest)
+    ["[", ..rest] -> [Ok(token.LeftBracket), ..acc] |> do_lex(rest)
+    ["]", ..rest] -> [Ok(token.RightBracket), ..acc] |> do_lex(rest)
     ["(", ..rest] -> [Ok(token.LeftParen), ..acc] |> do_lex(rest)
     [")", ..rest] -> [Ok(token.RightParen), ..acc] |> do_lex(rest)
     [",", ..rest] -> [Ok(token.Comma), ..acc] |> do_lex(rest)

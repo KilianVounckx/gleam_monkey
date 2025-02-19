@@ -11,6 +11,7 @@ pub type Expression {
   Prefix(operator: PrefixOperator, right: Expression)
   Variable(String)
   Function(parameters: List(String), body: Expression)
+  List(values: List(Expression))
   String(String)
   Integer(Int)
   Boolean(Bool)
@@ -79,6 +80,9 @@ pub fn to_string(expression: Expression) -> String {
       <> function_parameters_to_string(parameters)
       <> ") "
       <> to_string(body)
+    }
+    List(values:) -> {
+      "[" <> expressions_to_string(values) <> "]"
     }
     String(s) -> "\"" <> s <> "\""
     Integer(n) -> int.to_string(n)

@@ -7,6 +7,8 @@ pub type Token {
   String(String)
   Integer(Int)
 
+  LeftBracket
+  RightBracket
   LeftParen
   RightParen
   Comma
@@ -46,6 +48,8 @@ pub fn to_string(token: Token) -> String {
     String(s) -> "\"" <> s <> "\""
     Integer(n) -> int.to_string(n)
 
+    LeftBracket -> "["
+    RightBracket -> "]"
     LeftParen -> "("
     RightParen -> ")"
     Comma -> ","
