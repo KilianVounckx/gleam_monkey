@@ -37,18 +37,22 @@ pub const initial_environment = Extend(
   Extend(
     Extend(
       Extend(
-        Empty,
-        "string_length",
-        Builtin(name: "string_length", function: string_length),
+        Extend(
+          Empty,
+          "string_length",
+          Builtin(name: "string_length", function: builtin__string_length),
+        ),
+        "print",
+        Builtin(name: "print", function: builtin__print),
       ),
-      "print",
-      Builtin(name: "print", function: print_value),
+      "list_length",
+      Builtin(name: "list_length", function: builtin__list_length),
     ),
-    "list_length",
-    Builtin(name: "list_length", function: list_length),
+    "list_concat",
+    Builtin(name: "list_concat", function: builtin__list_concat),
   ),
-  "list_concat",
-  Builtin(name: "list_concat", function: list_concat),
+  "integer_to_string",
+  Builtin(name: "integer_to_string", function: builtin__integer_to_string),
 )
 
 pub fn environment_lookup(
@@ -161,7 +165,9 @@ pub fn error_to_string(error: Error) -> String {
   }
 }
 
-fn print_value(values: List(Value)) -> Result(Value, Error) {
+// === Builtins ===
+
+fn builtin__print(values: List(Value)) -> Result(Value, Error) {
   case values {
     [String(s)] -> {
       io.println(s)
@@ -172,7 +178,7 @@ fn print_value(values: List(Value)) -> Result(Value, Error) {
   }
 }
 
-fn string_length(values: List(Value)) -> Result(Value, Error) {
+fn builtin__string_length(values: List(Value)) -> Result(Value, Error) {
   case values {
     [String(s)] -> Ok(Integer(string.length(s)))
     [value] -> Error(BuiltinTypeMismatch(name: "string_length", got: [value]))
@@ -180,7 +186,7 @@ fn string_length(values: List(Value)) -> Result(Value, Error) {
   }
 }
 
-fn list_length(values: List(Value)) -> Result(Value, Error) {
+fn builtin__list_length(values: List(Value)) -> Result(Value, Error) {
   case values {
     [List(values)] -> Ok(Integer(list.length(values)))
     [value] -> Error(BuiltinTypeMismatch(name: "list_length", got: [value]))
@@ -188,11 +194,20 @@ fn list_length(values: List(Value)) -> Result(Value, Error) {
   }
 }
 
-fn list_concat(values: List(Value)) -> Result(Value, Error) {
+fn builtin__list_concat(values: List(Value)) -> Result(Value, Error) {
   case values {
     [List(left), List(right)] -> Ok(List(list.append(left, right)))
     [left, right] ->
       Error(BuiltinTypeMismatch(name: "list_length", got: [left, right]))
+    _ -> Error(ArityMismatch(got: list.length(values), want: 1))
+  }
+}
+
+fn builtin__integer_to_string(values: List(Value)) -> Result(Value, Error) {
+  case values {
+    [Integer(n)] -> Ok(String(int.to_string(n)))
+    [value] ->
+      Error(BuiltinTypeMismatch(name: "integer_to_string", got: [value]))
     _ -> Error(ArityMismatch(got: list.length(values), want: 1))
   }
 }
