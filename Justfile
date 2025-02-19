@@ -9,4 +9,4 @@ build:
 # Run unit and cram tests
 test:
     gleam test
-    cram -i cram/*.t
+    cram -E -i cram/*.t
