@@ -129,6 +129,12 @@ pub fn parse_test() {
     operator: ast.LessEqual,
     right: ast.Integer(5),
   ))
+  pipeline("\"hi\" <> \"no\"")
+  |> should.equal(ast.Infix(
+    left: ast.String("hi"),
+    operator: ast.Concat,
+    right: ast.String("no"),
+  ))
   pipeline("5 - 5")
   |> should.equal(ast.Infix(
     left: ast.Integer(5),

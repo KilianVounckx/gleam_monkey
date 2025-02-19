@@ -54,6 +54,7 @@ fn do_lex(
     [">", "=", ..rest] -> [Ok(token.GreaterEqual), ..acc] |> do_lex(rest)
     [">", ..rest] -> [Ok(token.Greater), ..acc] |> do_lex(rest)
     ["<", "=", ..rest] -> [Ok(token.LessEqual), ..acc] |> do_lex(rest)
+    ["<", ">", ..rest] -> [Ok(token.LessGreater), ..acc] |> do_lex(rest)
     ["<", ..rest] -> [Ok(token.Less), ..acc] |> do_lex(rest)
     ["\"", ..rest] -> {
       let #(before, rest) = rest |> list.split_while(fn(c) { c != "\"" })

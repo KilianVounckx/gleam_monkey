@@ -92,27 +92,28 @@ pub fn eval(
     ast.Infix(left:, operator:, right:) -> {
       use left <- result.try(left |> eval(environment))
       use right <- result.try(right |> eval(environment))
-      case operator {
-        ast.Equal -> Ok(value.Boolean(left == right))
-        ast.NotEqual -> Ok(value.Boolean(left != right))
-        _ -> {
-          case left, right {
-            value.Integer(left), value.Integer(right) -> {
-              case operator {
-                ast.Greater -> Ok(value.Boolean(left > right))
-                ast.GreaterEqual -> Ok(value.Boolean(left >= right))
-                ast.Less -> Ok(value.Boolean(left < right))
-                ast.LessEqual -> Ok(value.Boolean(left <= right))
-                ast.Add -> Ok(value.Integer(left + right))
-                ast.Subtract -> Ok(value.Integer(left - right))
-                ast.Multiply -> Ok(value.Integer(left * right))
-                ast.Divide -> Ok(value.Integer(left / right))
-                ast.Equal | ast.NotEqual -> panic as "unreachable infix eval"
-              }
-            }
-            _, _ -> Error(InfixTypeMismatch(left:, operator:, right:))
-          }
-        }
+      case left, operator, right {
+        _, ast.Equal, _ -> Ok(value.Boolean(left == right))
+        _, ast.NotEqual, _ -> Ok(value.Boolean(left != right))
+        value.Integer(left), ast.Greater, value.Integer(right) ->
+          Ok(value.Boolean(left > right))
+        value.Integer(left), ast.GreaterEqual, value.Integer(right) ->
+          Ok(value.Boolean(left >= right))
+        value.Integer(left), ast.Less, value.Integer(right) ->
+          Ok(value.Boolean(left < right))
+        value.Integer(left), ast.LessEqual, value.Integer(right) ->
+          Ok(value.Boolean(left <= right))
+        value.Integer(left), ast.Add, value.Integer(right) ->
+          Ok(value.Integer(left + right))
+        value.Integer(left), ast.Subtract, value.Integer(right) ->
+          Ok(value.Integer(left - right))
+        value.Integer(left), ast.Multiply, value.Integer(right) ->
+          Ok(value.Integer(left * right))
+        value.Integer(left), ast.Divide, value.Integer(right) ->
+          Ok(value.Integer(left / right))
+        value.String(left), ast.Concat, value.String(right) ->
+          Ok(value.String(left <> right))
+        _, _, _ -> Error(InfixTypeMismatch(left:, operator:, right:))
       }
     }
     ast.Prefix(operator:, right:) -> {

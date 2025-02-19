@@ -81,6 +81,7 @@ fn infix(
     | token.GreaterEqual
     | token.Less
     | token.LessEqual
+    | token.LessGreater
     | token.Plus
     | token.Minus
     | token.Star
@@ -216,6 +217,7 @@ fn parse_infix(left: Expression) -> ResultAction(Expression, Error, Parser) {
     token.GreaterEqual -> ast.GreaterEqual
     token.Less -> ast.Less
     token.LessEqual -> ast.LessEqual
+    token.LessGreater -> ast.Concat
     token.Plus -> ast.Add
     token.Minus -> ast.Subtract
     token.Star -> ast.Multiply
@@ -377,6 +379,7 @@ fn precedence_from_token(token: Token) -> Int {
     token.EqualEqual | token.BangEqual -> precedence_equality
     token.Greater | token.GreaterEqual | token.Less | token.LessEqual ->
       precedence_comparison
+    token.LessGreater -> precedence_concat
     token.Plus | token.Minus -> precedence_term
     token.Star | token.Slash -> precedence_factor
     token.LeftParen -> precedence_call
@@ -390,10 +393,12 @@ const precedence_equality = 1
 
 const precedence_comparison = 2
 
-const precedence_term = 3
+const precedence_concat = 3
 
-const precedence_factor = 4
+const precedence_term = 4
 
-const precedence_prefix = 5
+const precedence_factor = 5
 
-const precedence_call = 6
+const precedence_prefix = 6
+
+const precedence_call = 7

@@ -14,7 +14,7 @@ let rec and
 if (5 < 10) then true else false
 10 == 10
 10 != 9
-! != = == > >= < <=
+! != = == > >= < <= <>
 \"hi there\"
 "
   |> lexer.lex
@@ -91,6 +91,7 @@ if (5 < 10) then true else false
     token.GreaterEqual,
     token.Less,
     token.LessEqual,
+    token.LessGreater,
     token.String("hi there"),
     token.Eof,
   ])

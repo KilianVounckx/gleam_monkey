@@ -28,6 +28,7 @@ pub type InfixOperator {
   GreaterEqual
   Less
   LessEqual
+  Concat
   Add
   Subtract
   Multiply
@@ -95,6 +96,7 @@ pub fn infix_to_string(operator: InfixOperator) {
     GreaterEqual -> ">="
     Less -> "<"
     LessEqual -> "<="
+    Concat -> "<>"
     Add -> "+"
     Subtract -> "-"
     Multiply -> "*"
