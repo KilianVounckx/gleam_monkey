@@ -5,7 +5,7 @@ import gleam/string
 import monkey/evaluator
 import monkey/lexer
 import monkey/parser
-import monkey/value.{Empty}
+import monkey/value.{type Value, Empty}
 
 pub type Error {
   Lexer(List(lexer.Error))
@@ -31,12 +31,18 @@ pub fn error_to_string(error: Error) -> String {
   }
 }
 
-pub fn pipeline(input: String) -> Result(Nil, Error) {
+pub fn run(input: String) -> Nil {
+  case pipeline(input) {
+    Ok(value) -> value |> value.to_string |> io.println
+    Error(error) -> error |> error_to_string |> io.println_error
+  }
+}
+
+pub fn pipeline(input: String) -> Result(Value, Error) {
   use tokens <- result.try(input |> lexer.lex |> result.map_error(Lexer))
   use ast <- result.try(tokens |> parser.parse |> result.map_error(Parser))
   use value <- result.try(
     ast |> evaluator.eval(Empty) |> result.map_error(Evaluator),
   )
-  value |> value.to_string |> io.println
-  Ok(Nil)
+  Ok(value)
 }
