@@ -3,11 +3,13 @@ import gleam/io
 import gleam/list
 import gleam/result
 import gleam/string
+import monkey/ast
 import monkey/lexer
-import monkey/token
+import monkey/parser
 
 type PipelineError {
   Lexer(List(lexer.Error))
+  Parser(parser.Error)
 }
 
 pub fn main() -> Nil {
@@ -27,7 +29,8 @@ fn repl() -> Nil {
 fn pipeline(input: String) -> Nil {
   let result = {
     use tokens <- result.try(input |> lexer.lex |> result.map_error(Lexer))
-    tokens |> list.map(token.to_string) |> string.join(" ") |> io.println
+    use ast <- result.try(tokens |> parser.parse |> result.map_error(Parser))
+    ast |> ast.to_string |> io.println
     Ok(Nil)
   }
   case result {
@@ -36,7 +39,12 @@ fn pipeline(input: String) -> Nil {
       errors
       |> list.map(lexer.error_to_string)
       |> string.join("\n")
-      |> io.println
+      |> io.println_error
+    }
+    Error(Parser(error)) -> {
+      error
+      |> parser.error_to_string
+      |> io.println_error
     }
   }
 }
