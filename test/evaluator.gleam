@@ -40,13 +40,13 @@ odd(10)",
   pipeline("let add = fun(x, y) x + y in add(5 + 5, add(5, 5))")
   |> should.equal(value.Integer(20))
   pipeline("(fun(x) x)(5)") |> should.equal(value.Integer(5))
-  pipeline("fun(x) x + 2")
+  pipeline("fun(x, y) x + y")
   |> should.equal(value.Function(
-    parameters: ["x"],
+    parameters: ["x", "y"],
     body: ast.Infix(
       left: ast.Variable("x"),
       operator: ast.Add,
-      right: ast.Integer(2),
+      right: ast.Variable("y"),
     ),
     environment: Empty,
   ))
