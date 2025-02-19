@@ -31,12 +31,20 @@ pub type Environment {
 
 pub const initial_environment = Extend(
   Extend(
-    Empty,
-    "string_length",
-    Builtin(name: "string_length", function: string_length),
+    Extend(
+      Extend(
+        Empty,
+        "string_length",
+        Builtin(name: "string_length", function: string_length),
+      ),
+      "print",
+      Builtin(name: "print", function: print_value),
+    ),
+    "list_length",
+    Builtin(name: "list_length", function: list_length),
   ),
-  "print",
-  Builtin(name: "print", function: print_value),
+  "list_concat",
+  Builtin(name: "list_concat", function: list_concat),
 )
 
 pub fn environment_lookup(
@@ -137,6 +145,23 @@ fn string_length(values: List(Value)) -> Result(Value, Error) {
   case values {
     [String(s)] -> Ok(Integer(string.length(s)))
     [value] -> Error(BuiltinTypeMismatch(name: "string_length", got: [value]))
+    _ -> Error(ArityMismatch(got: list.length(values), want: 1))
+  }
+}
+
+fn list_length(values: List(Value)) -> Result(Value, Error) {
+  case values {
+    [List(values)] -> Ok(Integer(list.length(values)))
+    [value] -> Error(BuiltinTypeMismatch(name: "list_length", got: [value]))
+    _ -> Error(ArityMismatch(got: list.length(values), want: 1))
+  }
+}
+
+fn list_concat(values: List(Value)) -> Result(Value, Error) {
+  case values {
+    [List(left), List(right)] -> Ok(List(list.append(left, right)))
+    [left, right] ->
+      Error(BuiltinTypeMismatch(name: "list_length", got: [left, right]))
     _ -> Error(ArityMismatch(got: list.length(values), want: 1))
   }
 }

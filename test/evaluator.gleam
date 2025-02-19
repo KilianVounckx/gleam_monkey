@@ -9,6 +9,19 @@ import monkey/parser
 import monkey/value.{type Value, initial_environment}
 
 pub fn eval_test() {
+  pipeline("list_length([])") |> should.equal(value.Integer(0))
+  pipeline("list_length([1, 2, 3])") |> should.equal(value.Integer(3))
+  pipeline("list_concat([1, 2, 3], [4, 5, 6])")
+  |> should.equal(
+    value.List([
+      value.Integer(1),
+      value.Integer(2),
+      value.Integer(3),
+      value.Integer(4),
+      value.Integer(5),
+      value.Integer(6),
+    ]),
+  )
   pipeline("string_length(\"\")") |> should.equal(value.Integer(0))
   pipeline("string_length(\"hello\")") |> should.equal(value.Integer(5))
   pipeline("string_length(\"hi there\")") |> should.equal(value.Integer(8))
