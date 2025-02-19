@@ -29,35 +29,7 @@ pub fn eval(
       }
     }
     ast.Call(function:, arguments:) -> {
-      use function <- result.try(function |> eval(environment))
-      use arguments <- result.try(arguments |> eval_expressions(environment))
-      case function {
-        value.Function(parameters:, body:, environment:) -> {
-          let num_parameters = parameters |> list.length
-          let num_arguments = arguments |> list.length
-          case num_parameters == num_arguments {
-            True -> {
-              let environment =
-                parameters
-                |> list.zip(arguments)
-                |> list.fold(environment, fn(environment, entry) {
-                  let #(parameter, argument) = entry
-                  environment |> Extend(name: parameter, value: argument)
-                })
-              body |> eval(environment)
-            }
-            False ->
-              Error(value.ArityMismatch(
-                got: num_arguments,
-                want: num_parameters,
-              ))
-          }
-        }
-        value.Builtin(name: _, function:) -> {
-          function(arguments)
-        }
-        _ -> Error(value.NotAFunction(value: function))
-      }
+      eval_call(function, arguments, environment)
     }
     ast.Index(collection:, index:) -> {
       use collection <- result.try(collection |> eval(environment))
@@ -79,30 +51,42 @@ pub fn eval(
       }
     }
     ast.Infix(left:, operator:, right:) -> {
-      use left <- result.try(left |> eval(environment))
-      use right <- result.try(right |> eval(environment))
-      case left, operator, right {
-        _, ast.Equal, _ -> Ok(value.Boolean(left == right))
-        _, ast.NotEqual, _ -> Ok(value.Boolean(left != right))
-        value.Integer(left), ast.Greater, value.Integer(right) ->
-          Ok(value.Boolean(left > right))
-        value.Integer(left), ast.GreaterEqual, value.Integer(right) ->
-          Ok(value.Boolean(left >= right))
-        value.Integer(left), ast.Less, value.Integer(right) ->
-          Ok(value.Boolean(left < right))
-        value.Integer(left), ast.LessEqual, value.Integer(right) ->
-          Ok(value.Boolean(left <= right))
-        value.Integer(left), ast.Add, value.Integer(right) ->
-          Ok(value.Integer(left + right))
-        value.Integer(left), ast.Subtract, value.Integer(right) ->
-          Ok(value.Integer(left - right))
-        value.Integer(left), ast.Multiply, value.Integer(right) ->
-          Ok(value.Integer(left * right))
-        value.Integer(left), ast.Divide, value.Integer(right) ->
-          Ok(value.Integer(left / right))
-        value.String(left), ast.Concat, value.String(right) ->
-          Ok(value.String(left <> right))
-        _, _, _ -> Error(value.InfixTypeMismatch(left:, operator:, right:))
+      case operator {
+        ast.Pipe -> {
+          case right {
+            ast.Call(function:, arguments:) -> {
+              eval_call(function, [left, ..arguments], environment)
+            }
+            _ -> Error(value.PipeTypeMismatch(left:, right:))
+          }
+        }
+        _ -> {
+          use left <- result.try(left |> eval(environment))
+          use right <- result.try(right |> eval(environment))
+          case left, operator, right {
+            _, ast.Equal, _ -> Ok(value.Boolean(left == right))
+            _, ast.NotEqual, _ -> Ok(value.Boolean(left != right))
+            value.Integer(left), ast.Greater, value.Integer(right) ->
+              Ok(value.Boolean(left > right))
+            value.Integer(left), ast.GreaterEqual, value.Integer(right) ->
+              Ok(value.Boolean(left >= right))
+            value.Integer(left), ast.Less, value.Integer(right) ->
+              Ok(value.Boolean(left < right))
+            value.Integer(left), ast.LessEqual, value.Integer(right) ->
+              Ok(value.Boolean(left <= right))
+            value.Integer(left), ast.Add, value.Integer(right) ->
+              Ok(value.Integer(left + right))
+            value.Integer(left), ast.Subtract, value.Integer(right) ->
+              Ok(value.Integer(left - right))
+            value.Integer(left), ast.Multiply, value.Integer(right) ->
+              Ok(value.Integer(left * right))
+            value.Integer(left), ast.Divide, value.Integer(right) ->
+              Ok(value.Integer(left / right))
+            value.String(left), ast.Concat, value.String(right) ->
+              Ok(value.String(left <> right))
+            _, _, _ -> Error(value.InfixTypeMismatch(left:, operator:, right:))
+          }
+        }
       }
     }
     ast.Prefix(operator:, right:) -> {
@@ -136,6 +120,39 @@ pub fn eval(
     ast.Integer(n) -> Ok(value.Integer(n))
     ast.Boolean(b) -> Ok(value.Boolean(b))
     ast.Nil -> Ok(value.Nil)
+  }
+}
+
+fn eval_call(
+  function: Expression,
+  arguments: List(Expression),
+  environment: Environment,
+) -> Result(Value, Error) {
+  use function <- result.try(function |> eval(environment))
+  use arguments <- result.try(arguments |> eval_expressions(environment))
+  case function {
+    value.Function(parameters:, body:, environment:) -> {
+      let num_parameters = parameters |> list.length
+      let num_arguments = arguments |> list.length
+      case num_parameters == num_arguments {
+        True -> {
+          let environment =
+            parameters
+            |> list.zip(arguments)
+            |> list.fold(environment, fn(environment, entry) {
+              let #(parameter, argument) = entry
+              environment |> Extend(name: parameter, value: argument)
+            })
+          body |> eval(environment)
+        }
+        False ->
+          Error(value.ArityMismatch(got: num_arguments, want: num_parameters))
+      }
+    }
+    value.Builtin(name: _, function:) -> {
+      function(arguments)
+    }
+    _ -> Error(value.NotAFunction(value: function))
   }
 }
 

@@ -30,6 +30,7 @@ pub type Token {
   Less
   LessEqual
   LessGreater
+  BarGreater
 
   And
   Else
@@ -75,6 +76,7 @@ pub fn to_string(token: Token) -> String {
     Less -> "<"
     LessEqual -> "<="
     LessGreater -> "<>"
+    BarGreater -> "|>"
 
     And -> "and"
     Else -> "else"

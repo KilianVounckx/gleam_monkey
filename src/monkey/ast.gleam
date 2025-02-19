@@ -25,6 +25,7 @@ pub type LetrecFunction {
 }
 
 pub type InfixOperator {
+  Pipe
   Equal
   NotEqual
   Greater
@@ -111,6 +112,7 @@ pub fn to_string(expression: Expression) -> String {
 
 pub fn infix_to_string(operator: InfixOperator) {
   case operator {
+    Pipe -> "|>"
     Equal -> "=="
     NotEqual -> "!="
     Greater -> ">="

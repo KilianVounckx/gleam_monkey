@@ -14,7 +14,7 @@ let rec and
 if (5 < 10) then true else false
 10 == 10
 10 != 9
-! != = == > >= < <= <>
+! != = == > >= < <= <> |>
 \"hi there\"
 []{}:.
 "
@@ -93,6 +93,7 @@ if (5 < 10) then true else false
     token.Less,
     token.LessEqual,
     token.LessGreater,
+    token.BarGreater,
     token.String("hi there"),
     token.LeftBracket,
     token.RightBracket,

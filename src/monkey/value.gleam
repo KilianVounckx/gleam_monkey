@@ -5,6 +5,7 @@ import gleam/string
 import monkey/ast.{type Expression}
 
 pub type Error {
+  PipeTypeMismatch(left: Expression, right: Expression)
   BuiltinTypeMismatch(name: String, got: List(Value))
   IndexTypeMismatch(collection: Value, index: Value)
   InfixTypeMismatch(left: Value, operator: ast.InfixOperator, right: Value)
@@ -119,6 +120,9 @@ pub fn is_truthy(value: Value) -> Bool {
 
 pub fn error_to_string(error: Error) -> String {
   case error {
+    PipeTypeMismatch(left:, right:) -> {
+      "not pipeable: " <> ast.to_string(left) <> " |> " <> ast.to_string(right)
+    }
     BuiltinTypeMismatch(name:, got:) -> {
       let got = got |> list.map(to_string) |> string.join(", ")
       "type mismatch: " <> name <> "(" <> got <> ")"

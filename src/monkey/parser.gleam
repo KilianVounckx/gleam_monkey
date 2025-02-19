@@ -83,7 +83,8 @@ fn infix(
       use _ <- act.try(advance())
       parse_field_access(left)
     }
-    token.EqualEqual
+    token.BarGreater
+    | token.EqualEqual
     | token.BangEqual
     | token.Greater
     | token.GreaterEqual
@@ -210,6 +211,7 @@ fn parse_field_access(
 fn parse_infix(left: Expression) -> ResultAction(Expression, Error, Parser) {
   use current <- act.try(current_token())
   let operator = case current {
+    token.BarGreater -> ast.Pipe
     token.EqualEqual -> ast.Equal
     token.BangEqual -> ast.NotEqual
     token.Greater -> ast.Greater
@@ -458,6 +460,7 @@ fn peek_token() -> ResultAction(Token, Error, Parser) {
 
 fn precedence_from_token(token: Token) -> Int {
   case token {
+    token.BarGreater -> precedence_pipe
     token.EqualEqual | token.BangEqual -> precedence_equality
     token.Greater | token.GreaterEqual | token.Less | token.LessEqual ->
       precedence_comparison
@@ -471,16 +474,18 @@ fn precedence_from_token(token: Token) -> Int {
 
 const precedence_lowest = 0
 
-const precedence_equality = 1
+const precedence_pipe = 1
 
-const precedence_comparison = 2
+const precedence_equality = 2
 
-const precedence_concat = 3
+const precedence_comparison = 3
 
-const precedence_term = 4
+const precedence_concat = 4
 
-const precedence_factor = 5
+const precedence_term = 5
 
-const precedence_prefix = 6
+const precedence_factor = 6
 
-const precedence_call = 7
+const precedence_prefix = 7
+
+const precedence_call = 8
