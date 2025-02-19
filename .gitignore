@@ -3,6 +3,7 @@
 !.gitignore
 
 !/LICENSE
+!/README.md
 !/gleam.toml
 !/manifest.toml
 !/src/**/*.gleam
