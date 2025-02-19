@@ -9,6 +9,8 @@ import monkey/parser
 import monkey/value.{type Value, initial_environment}
 
 pub fn eval_test() {
+  pipeline("{\"life\": 42, \"death\": 666}.life")
+  |> should.equal(value.Integer(42))
   pipeline("{1: 2, 2: 4}[2]")
   |> should.equal(value.Integer(4))
   pipeline("list_length([])") |> should.equal(value.Integer(0))

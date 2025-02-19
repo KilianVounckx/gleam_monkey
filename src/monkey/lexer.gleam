@@ -48,6 +48,7 @@ fn do_lex(
     [")", ..rest] -> [Ok(token.RightParen), ..acc] |> do_lex(rest)
     [",", ..rest] -> [Ok(token.Comma), ..acc] |> do_lex(rest)
     [":", ..rest] -> [Ok(token.Colon), ..acc] |> do_lex(rest)
+    [".", ..rest] -> [Ok(token.Dot), ..acc] |> do_lex(rest)
     ["-", ..rest] -> [Ok(token.Minus), ..acc] |> do_lex(rest)
     ["+", ..rest] -> [Ok(token.Plus), ..acc] |> do_lex(rest)
     ["/", ..rest] -> [Ok(token.Slash), ..acc] |> do_lex(rest)

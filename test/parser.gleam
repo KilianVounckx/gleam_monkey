@@ -186,6 +186,11 @@ pub fn parse_test() {
   ))
   pipeline("[1, 2, 3]")
   |> should.equal(ast.List([ast.Integer(1), ast.Integer(2), ast.Integer(3)]))
+  pipeline("foo.bar")
+  |> should.equal(ast.Index(
+    collection: ast.Variable("foo"),
+    index: ast.String("bar"),
+  ))
   pipeline("\"hi there\"") |> should.equal(ast.String("hi there"))
   pipeline("42") |> should.equal(ast.Integer(42))
   pipeline("true") |> should.equal(ast.Boolean(True))

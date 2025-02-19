@@ -79,6 +79,10 @@ fn infix(
       use _ <- act.try(advance())
       parse_index(left)
     }
+    token.Dot -> {
+      use _ <- act.try(advance())
+      parse_field_access(left)
+    }
     token.EqualEqual
     | token.BangEqual
     | token.Greater
@@ -192,6 +196,14 @@ fn parse_index(
   use _ <- act.try(advance())
   use index <- act.try(parse_expression(precedence_lowest))
   use _ <- act.try(expect_peek_token(token.RightBracket))
+  act.ok(ast.Index(collection:, index:))
+}
+
+fn parse_field_access(
+  collection: Expression,
+) -> ResultAction(Expression, Error, Parser) {
+  use index <- act.try(expect_peek_identifier())
+  let index = ast.String(index)
   act.ok(ast.Index(collection:, index:))
 }
 
@@ -452,7 +464,7 @@ fn precedence_from_token(token: Token) -> Int {
     token.LessGreater -> precedence_concat
     token.Plus | token.Minus -> precedence_term
     token.Star | token.Slash -> precedence_factor
-    token.LeftParen | token.LeftBracket -> precedence_call
+    token.LeftParen | token.LeftBracket | token.Dot -> precedence_call
     _ -> precedence_lowest
   }
 }

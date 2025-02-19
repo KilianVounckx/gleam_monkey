@@ -15,6 +15,7 @@ pub type Token {
   RightParen
   Comma
   Colon
+  Dot
   Minus
   Plus
   Slash
@@ -59,6 +60,7 @@ pub fn to_string(token: Token) -> String {
     RightParen -> ")"
     Comma -> ","
     Colon -> ":"
+    Dot -> "."
     Minus -> "-"
     Plus -> "+"
     Slash -> "/"
