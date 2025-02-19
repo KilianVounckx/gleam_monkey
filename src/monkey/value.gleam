@@ -6,18 +6,20 @@ import monkey/ast.{type Expression}
 
 pub type Error {
   BuiltinTypeMismatch(name: String, got: List(Value))
-  IndexTypeMismatch(list: Value, index: Value)
+  IndexTypeMismatch(collection: Value, index: Value)
   InfixTypeMismatch(left: Value, operator: ast.InfixOperator, right: Value)
   PrefixTypeMismatch(operator: ast.PrefixOperator, right: Value)
   VariableNotFound(name: String)
   NotAFunction(value: Value)
   ArityMismatch(got: Int, want: Int)
   IndexOutOfBounds(length: Int, index: Int)
+  KeyNotFound(key: Value)
 }
 
 pub type Value {
   Function(parameters: List(String), body: Expression, environment: Environment)
   Builtin(name: String, function: fn(List(Value)) -> Result(Value, Error))
+  Table(List(#(Value, Value)))
   List(List(Value))
   String(String)
   Integer(Int)
@@ -82,6 +84,17 @@ pub fn to_string(value: Value) -> String {
   case value {
     Function(_, _, _) -> "<function>"
     Builtin(name:, function: _) -> "<builtin function '" <> name <> "'>"
+    Table(pairs) ->
+      "{"
+      <> {
+        pairs
+        |> list.map(fn(pair) {
+          let #(key, value) = pair
+          to_string(key) <> ": " <> to_string(value)
+        })
+        |> string.join(", ")
+      }
+      <> "}"
     List(values) ->
       "[" <> { values |> list.map(to_string) |> string.join(", ") } <> "]"
     String(s) -> "\"" <> s <> "\""
@@ -135,8 +148,15 @@ pub fn error_to_string(error: Error) -> String {
       <> ", index is "
       <> int.to_string(index)
     }
-    IndexTypeMismatch(list:, index:) -> {
-      "type mismatch: " <> to_string(list) <> "[" <> to_string(index) <> "]"
+    IndexTypeMismatch(collection:, index:) -> {
+      "type mismatch: "
+      <> to_string(collection)
+      <> "["
+      <> to_string(index)
+      <> "]"
+    }
+    KeyNotFound(key:) -> {
+      "key not found: " <> to_string(key)
     }
   }
 }

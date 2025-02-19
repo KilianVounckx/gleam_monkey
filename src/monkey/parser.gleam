@@ -104,6 +104,7 @@ fn prefix(token: Token) -> ResultAction(Expression, Error, Parser) {
     token.Bang | token.Minus -> parse_prefix()
     token.Identifier(_) -> parse_identifier()
     token.Fun -> parse_function()
+    token.LeftBrace -> parse_table()
     token.LeftBracket -> parse_list()
     token.String(_) -> parse_string()
     token.Integer(_) -> parse_integer()
@@ -185,11 +186,13 @@ fn parse_call_arguments() -> ResultAction(List(Expression), Error, Parser) {
   parse_expressions(token.RightParen)
 }
 
-fn parse_index(list: Expression) -> ResultAction(Expression, Error, Parser) {
+fn parse_index(
+  collection: Expression,
+) -> ResultAction(Expression, Error, Parser) {
   use _ <- act.try(advance())
   use index <- act.try(parse_expression(precedence_lowest))
   use _ <- act.try(expect_peek_token(token.RightBracket))
-  act.ok(ast.Index(list:, index:))
+  act.ok(ast.Index(collection:, index:))
 }
 
 fn parse_infix(left: Expression) -> ResultAction(Expression, Error, Parser) {
@@ -278,6 +281,50 @@ fn parse_string() -> ResultAction(Expression, Error, Parser) {
   case current {
     token.String(s) -> act.ok(ast.String(s))
     _ -> panic as "unreachable in string"
+  }
+}
+
+fn parse_table() -> ResultAction(Expression, Error, Parser) {
+  use pairs <- act.try(parse_table_pairs())
+  act.ok(ast.Table(pairs:))
+}
+
+fn parse_table_pairs() -> ResultAction(
+  List(#(Expression, Expression)),
+  Error,
+  Parser,
+) {
+  use peek <- act.try(peek_token())
+  case peek == token.RightBrace {
+    True -> {
+      use _ <- act.try(advance())
+      act.ok([])
+    }
+    False -> {
+      use pairs <- act.try(do_parse_table_pairs([]))
+      let pairs = pairs |> list.reverse
+      use _ <- act.try(expect_peek_token(token.RightBrace))
+      act.ok(pairs)
+    }
+  }
+}
+
+fn do_parse_table_pairs(
+  pairs: List(#(Expression, Expression)),
+) -> ResultAction(List(#(Expression, Expression)), Error, Parser) {
+  use _ <- act.try(advance())
+  use key <- act.try(parse_expression(precedence_lowest))
+  use _ <- act.try(expect_peek_token(token.Colon))
+  use _ <- act.try(advance())
+  use value <- act.try(parse_expression(precedence_lowest))
+  let pairs = [#(key, value), ..pairs]
+  use peek <- act.try(peek_token())
+  case peek {
+    token.Comma -> {
+      use _ <- act.try(advance())
+      do_parse_table_pairs(pairs)
+    }
+    _ -> act.ok(pairs)
   }
 }
 

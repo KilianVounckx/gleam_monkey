@@ -59,10 +59,10 @@ pub fn eval(
         _ -> Error(value.NotAFunction(value: function))
       }
     }
-    ast.Index(list:, index:) -> {
-      use list <- result.try(list |> eval(environment))
+    ast.Index(collection:, index:) -> {
+      use collection <- result.try(collection |> eval(environment))
       use index <- result.try(index |> eval(environment))
-      case list, index {
+      case collection, index {
         value.List(list), value.Integer(index) -> {
           list
           |> list_get_nth(index)
@@ -70,7 +70,12 @@ pub fn eval(
             value.IndexOutOfBounds(length: list.length(list), index:)
           })
         }
-        _, _ -> Error(value.IndexTypeMismatch(list:, index:))
+        value.Table(pairs), index -> {
+          pairs
+          |> list.key_find(index)
+          |> result.map_error(fn(_) { value.KeyNotFound(key: index) })
+        }
+        _, _ -> Error(value.IndexTypeMismatch(collection:, index:))
       }
     }
     ast.Infix(left:, operator:, right:) -> {
@@ -119,6 +124,10 @@ pub fn eval(
     }
     ast.Function(parameters:, body:) ->
       Ok(value.Function(parameters:, body:, environment:))
+    ast.Table(pairs:) -> {
+      use pairs <- result.try(pairs |> eval_pairs(environment))
+      Ok(value.Table(pairs))
+    }
     ast.List(values:) -> {
       use values <- result.try(values |> eval_expressions(environment))
       Ok(value.List(values))
@@ -127,6 +136,29 @@ pub fn eval(
     ast.Integer(n) -> Ok(value.Integer(n))
     ast.Boolean(b) -> Ok(value.Boolean(b))
     ast.Nil -> Ok(value.Nil)
+  }
+}
+
+fn eval_pairs(
+  pairs: List(#(Expression, Expression)),
+  environment: Environment,
+) -> Result(List(#(Value, Value)), Error) {
+  do_eval_pairs([], pairs, environment) |> result.map(list.reverse)
+}
+
+fn do_eval_pairs(
+  value_pairs: List(#(Value, Value)),
+  expression_pairs: List(#(Expression, Expression)),
+  environment: Environment,
+) -> Result(List(#(Value, Value)), Error) {
+  case expression_pairs {
+    [] -> Ok(value_pairs)
+    [#(key, value), ..expression_pairs] -> {
+      use key <- result.try(key |> eval(environment))
+      use value <- result.try(value |> eval(environment))
+      let value_pairs = [#(key, value), ..value_pairs]
+      value_pairs |> do_eval_pairs(expression_pairs, environment)
+    }
   }
 }
 

@@ -45,7 +45,7 @@ pub fn parse_test() {
   )
   pipeline("foo[bar]")
   |> should.equal(ast.Index(
-    list: ast.Variable("foo"),
+    collection: ast.Variable("foo"),
     index: ast.Variable("bar"),
   ))
   pipeline("(1 + 2) * 3")

@@ -7,11 +7,12 @@ pub type Expression {
   Let(name: String, value: Expression, body: Expression)
   If(condition: Expression, consequence: Expression, alternative: Expression)
   Call(function: Expression, arguments: List(Expression))
-  Index(list: Expression, index: Expression)
+  Index(collection: Expression, index: Expression)
   Infix(left: Expression, operator: InfixOperator, right: Expression)
   Prefix(operator: PrefixOperator, right: Expression)
   Variable(String)
   Function(parameters: List(String), body: Expression)
+  Table(pairs: List(#(Expression, Expression)))
   List(values: List(Expression))
   String(String)
   Integer(Int)
@@ -63,8 +64,8 @@ pub fn to_string(expression: Expression) -> String {
     Call(function:, arguments:) -> {
       to_string(function) <> "(" <> expressions_to_string(arguments) <> ")"
     }
-    Index(list:, index:) -> {
-      to_string(list) <> "[" <> to_string(index) <> "]"
+    Index(collection:, index:) -> {
+      to_string(collection) <> "[" <> to_string(index) <> "]"
     }
     Infix(left:, operator:, right:) -> {
       "("
@@ -84,6 +85,18 @@ pub fn to_string(expression: Expression) -> String {
       <> function_parameters_to_string(parameters)
       <> ") "
       <> to_string(body)
+    }
+    Table(pairs:) -> {
+      "{"
+      <> {
+        pairs
+        |> list.map(fn(pair) {
+          let #(key, value) = pair
+          to_string(key) <> ": " <> to_string(value)
+        })
+        |> string.join(", ")
+      }
+      <> "}"
     }
     List(values:) -> {
       "[" <> expressions_to_string(values) <> "]"

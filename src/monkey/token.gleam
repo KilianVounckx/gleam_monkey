@@ -7,11 +7,14 @@ pub type Token {
   String(String)
   Integer(Int)
 
+  LeftBrace
+  RightBrace
   LeftBracket
   RightBracket
   LeftParen
   RightParen
   Comma
+  Colon
   Minus
   Plus
   Slash
@@ -48,11 +51,14 @@ pub fn to_string(token: Token) -> String {
     String(s) -> "\"" <> s <> "\""
     Integer(n) -> int.to_string(n)
 
+    LeftBrace -> "{"
+    RightBrace -> "}"
     LeftBracket -> "["
     RightBracket -> "]"
     LeftParen -> "("
     RightParen -> ")"
     Comma -> ","
+    Colon -> ":"
     Minus -> "-"
     Plus -> "+"
     Slash -> "/"
