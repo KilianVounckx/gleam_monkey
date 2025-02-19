@@ -43,6 +43,11 @@ pub fn parse_test() {
       ast.Infix(left: ast.Integer(4), operator: ast.Add, right: ast.Integer(5)),
     ]),
   )
+  pipeline("foo[bar]")
+  |> should.equal(ast.Index(
+    list: ast.Variable("foo"),
+    index: ast.Variable("bar"),
+  ))
   pipeline("(1 + 2) * 3")
   |> should.equal(ast.Infix(
     left: ast.Infix(

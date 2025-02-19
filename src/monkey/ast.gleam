@@ -7,6 +7,7 @@ pub type Expression {
   Let(name: String, value: Expression, body: Expression)
   If(condition: Expression, consequence: Expression, alternative: Expression)
   Call(function: Expression, arguments: List(Expression))
+  Index(list: Expression, index: Expression)
   Infix(left: Expression, operator: InfixOperator, right: Expression)
   Prefix(operator: PrefixOperator, right: Expression)
   Variable(String)
@@ -61,6 +62,9 @@ pub fn to_string(expression: Expression) -> String {
     }
     Call(function:, arguments:) -> {
       to_string(function) <> "(" <> expressions_to_string(arguments) <> ")"
+    }
+    Index(list:, index:) -> {
+      to_string(list) <> "[" <> to_string(index) <> "]"
     }
     Infix(left:, operator:, right:) -> {
       "("

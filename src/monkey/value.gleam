@@ -6,11 +6,13 @@ import monkey/ast.{type Expression}
 
 pub type Error {
   BuiltinTypeMismatch(name: String, got: List(Value))
+  IndexTypeMismatch(list: Value, index: Value)
   InfixTypeMismatch(left: Value, operator: ast.InfixOperator, right: Value)
   PrefixTypeMismatch(operator: ast.PrefixOperator, right: Value)
   VariableNotFound(name: String)
   NotAFunction(value: Value)
   ArityMismatch(got: Int, want: Int)
+  IndexOutOfBounds(length: Int, index: Int)
 }
 
 pub type Value {
@@ -126,6 +128,15 @@ pub fn error_to_string(error: Error) -> String {
       <> int.to_string(want)
       <> ", got "
       <> int.to_string(got)
+    }
+    IndexOutOfBounds(length:, index:) -> {
+      "index out of bounds: length is "
+      <> int.to_string(length)
+      <> ", index is "
+      <> int.to_string(index)
+    }
+    IndexTypeMismatch(list:, index:) -> {
+      "type mismatch: " <> to_string(list) <> "[" <> to_string(index) <> "]"
     }
   }
 }

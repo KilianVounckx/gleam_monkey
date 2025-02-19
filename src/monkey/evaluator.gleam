@@ -59,6 +59,20 @@ pub fn eval(
         _ -> Error(value.NotAFunction(value: function))
       }
     }
+    ast.Index(list:, index:) -> {
+      use list <- result.try(list |> eval(environment))
+      use index <- result.try(index |> eval(environment))
+      case list, index {
+        value.List(list), value.Integer(index) -> {
+          list
+          |> list_get_nth(index)
+          |> result.map_error(fn(_) {
+            value.IndexOutOfBounds(length: list.length(list), index:)
+          })
+        }
+        _, _ -> Error(value.IndexTypeMismatch(list:, index:))
+      }
+    }
     ast.Infix(left:, operator:, right:) -> {
       use left <- result.try(left |> eval(environment))
       use right <- result.try(right |> eval(environment))
@@ -135,5 +149,13 @@ fn do_eval_expressions(
       let values = [value, ..values]
       values |> do_eval_expressions(expressions, environment)
     }
+  }
+}
+
+fn list_get_nth(list: List(a), index: Int) -> Result(a, Nil) {
+  case list, index {
+    [], _ -> Error(Nil)
+    [first, ..], 0 -> Ok(first)
+    [_, ..rest], index -> list_get_nth(rest, index - 1)
   }
 }

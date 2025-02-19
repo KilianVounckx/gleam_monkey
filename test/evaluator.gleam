@@ -66,6 +66,7 @@ odd(10)",
     ),
     environment: initial_environment,
   ))
+  pipeline("[1, 2, 3][0]") |> should.equal(value.Integer(1))
   pipeline("let a = 5 in a") |> should.equal(value.Integer(5))
   pipeline("let a = 5 * 5 in a") |> should.equal(value.Integer(25))
   pipeline("let a = 5 in let b = a in b") |> should.equal(value.Integer(5))

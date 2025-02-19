@@ -75,6 +75,10 @@ fn infix(
       use _ <- act.try(advance())
       parse_call(left)
     }
+    token.LeftBracket -> {
+      use _ <- act.try(advance())
+      parse_index(left)
+    }
     token.EqualEqual
     | token.BangEqual
     | token.Greater
@@ -179,6 +183,13 @@ fn parse_call(function: Expression) -> ResultAction(Expression, Error, Parser) {
 
 fn parse_call_arguments() -> ResultAction(List(Expression), Error, Parser) {
   parse_expressions(token.RightParen)
+}
+
+fn parse_index(list: Expression) -> ResultAction(Expression, Error, Parser) {
+  use _ <- act.try(advance())
+  use index <- act.try(parse_expression(precedence_lowest))
+  use _ <- act.try(expect_peek_token(token.RightBracket))
+  act.ok(ast.Index(list:, index:))
 }
 
 fn parse_infix(left: Expression) -> ResultAction(Expression, Error, Parser) {
@@ -394,7 +405,7 @@ fn precedence_from_token(token: Token) -> Int {
     token.LessGreater -> precedence_concat
     token.Plus | token.Minus -> precedence_term
     token.Star | token.Slash -> precedence_factor
-    token.LeftParen -> precedence_call
+    token.LeftParen | token.LeftBracket -> precedence_call
     _ -> precedence_lowest
   }
 }
