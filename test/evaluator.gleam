@@ -33,6 +33,8 @@ odd(10)",
   |> should.equal(value.Integer(5))
   pipeline("let double = fun(x) x * 2 in double(5)")
   |> should.equal(value.Integer(10))
+  pipeline("let sub = fun(x, y) x - y in sub(5, 10)")
+  |> should.equal(value.Integer(-5))
   pipeline("let add = fun(x, y) x + y in add(5, 5)")
   |> should.equal(value.Integer(10))
   pipeline("let add = fun(x, y) x + y in add(5 + 5, add(5, 5))")

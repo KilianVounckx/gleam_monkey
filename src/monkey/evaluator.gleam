@@ -145,7 +145,7 @@ fn eval_expressions(
   expressions: List(Expression),
   environment: Environment,
 ) -> Result(List(Value), Error) {
-  do_eval_expressions([], expressions, environment)
+  do_eval_expressions([], expressions, environment) |> result.map(list.reverse)
 }
 
 fn do_eval_expressions(
